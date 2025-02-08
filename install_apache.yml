@@ -1,18 +1,17 @@
 ---
+
 - hosts: all
   become: true
-  tasks:
-  - name: update repository package
-    ansible.builtin.apt:
+  pre_tasks:
+
+  - name: install updates for fedora
+    ansible.builtin.dnf:
+      update_only: yes
       update_cache: yes
+    when: ansible_distribution == "Fedora"
 
-  - name: install apache2 package
+  - name: install updates for ubuntu
     ansible.builtin.apt:
-      name: apache2
-      state: latest
-
-  - name: install support for php
-    ansible.builtin.apt:
-      name: libapache2-mod-php
-      state: latest  
-    
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
