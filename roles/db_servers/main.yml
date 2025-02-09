@@ -1,0 +1,6 @@
+- name: isntall maria db on db  servers (fedora)
+  tags: always
+  ansible.builtin.dnf:
+    name: mariadb
+    state: latest
+  when ansible_distribution == "Fedora"

@@ -18,92 +18,18 @@
       update_cache: yes
     when: ansible_distribution == "Ubuntu"
 
-- hosts: web_servers
+- hosts: all
   become: true
-  tasks:
-
-  - name: install apache2 on web servers (ubuntu)
-    tags: apache2,ubuntu
-    ansible.builtin.apt:
-      name: 
-        - apache2
-        - libapache2-mod-php
-    when: ansible_distribution == "Ubuntu"
-
-  - name: install apache on web servers (fedora)
-    tags: apache, fedora
-    ansible.builtin.dnf:
-      name: httpd
-    when: ansible_distribution == "Fedora"
-
-  - name: create user
-    tags: always
-    ansible.builtin.user:
-      name: Saurabh
-      groups: root
-
-  - name: add sudoers file for saurabh user
-    tags: always
-    ansible.builtin.copy:
-      src: sudoers_saurabh
-      dest: /etc/sudoers.d/Saurabh
-      owner: root
-      group: root
-      mode: 0440
-
-  - name: add ssh key for saurabh user
-    tags: always
-    ansible.builtin.authorized_key:
-      user: Saurabh
-      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJE6ajVr7uEb0xYRlBB1HH3DQ8+DeGI72p8jHa3iQF15 saurabh@ansible-ws"
-
-  - name: ensure apache is running (ubuntu)
-    tags: apache,ubuntu
-    ansible.builtin.service:
-      name: apache2
-      state: started
-    when: ansible_distribution == "ubuntu"
-
-  - name: ensure apache is runnning on web servers (fedora)
-    tags: apache,fedora
-    ansible.builtin.service:
-      name: httpd
-      state: started
-    when: ansible_distribution == "Fedora"
-
-  - name: change email adress on the fedora conf file
-    tags: apache,fedora
-    ansible.builtin.lineinfile:
-      path: /etc/httpd/conf/httpd.conf
-      regexp: ^SERVERADMIN
-      line: SERVERADMIN saurabhkumar@gmail
-    when: ansible_distribution == "Fedora"
-    register: httpd
-
-  - name: restart httpd (fedora)
-    tags: apache,fedora
-    ansible.builtin.service:
-      name: httpd
-      state: restarted
-    when: httpd.changed    
-
-  - name: copy html file for the site
-    tags: apache2,ubuntu
-    ansible.builtin.copy:
-      src: default_index.html
-      dest: /var/www/html/index.html
-      owner: root
-      group : root
-      mode: 0644      
-
+  roles:
+    - base
 
 - hosts: db_servers
   become: true
-  tasks:
+  roles:
+    - db_servers
 
-    - name: install mariadb  on db servers
-      tags: db,fedora
-      ansible.builtin.dnf:
-        name: mariadb
-        state: latest
-      when: ansible_distribution == "Fedora"  
+- hosts: web_servers
+  become: true
+  roles:
+    - web_servers
+
